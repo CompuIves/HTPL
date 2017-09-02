@@ -7,8 +7,61 @@ function traverse(parent, node, handler) {
   }
 }
 
+let varMap;
+
+function tagToValue(node) {
+  switch (node.nodeName) {
+    case 'sum': {
+      const vars = node.childNodes.map(n => tagToValue(n)).filter(x => x);
+
+      const total = vars.reduce(
+        (total, varVal) => parseInt(varVal, 10) + total,
+        0
+      );
+
+      return total;
+    }
+    case 'min': {
+      const vars = node.childNodes.map(n => tagToValue(n)).filter(x => x);
+
+      const min = vars.reduce(
+        (lowest, varVal) => (varVal < lowest ? varVal : lowest),
+        Infinity
+      );
+
+      return min;
+    }
+    case 'max': {
+      const vars = node.childNodes.map(n => tagToValue(n)).filter(x => x);
+
+      const max = vars.reduce(
+        (highest, varVal) => (varVal > highest ? varVal : highest),
+        0
+      );
+
+      return max;
+    }
+    case 'var': {
+      const attr = node.attrs.find(s => s.name === 'name');
+      if (!attr) {
+        throw new Error('There is a var with no name');
+      }
+
+      const { value: name } = attr;
+
+      return varMap.get(name);
+    }
+    case '#text': {
+      return node.value ? node.value.replace('\n', '').trim() : null;
+    }
+    default: {
+      return null;
+    }
+  }
+}
+
 export default function convertHTML(html: string) {
-  const varMap = new Map();
+  varMap = new Map();
 
   const ast = parse5.parse(html);
   traverse(null, ast, (parent, node) => {
@@ -22,24 +75,20 @@ export default function convertHTML(html: string) {
 
         const { value: name } = attr;
 
-        if (node.childNodes[0]) {
-          varMap.set(name, node.childNodes[0].value);
-        } else {
-          // No value, delete from registry
-          varMap.delete(name);
+        const firstChildNode = node.childNodes
+          .map(x => tagToValue(x))
+          .filter(x => x)[0];
+
+        if (firstChildNode) {
+          varMap.set(name, firstChildNode);
         }
 
         parent.childNodes = parent.childNodes.filter(n => n !== node);
       }
+      case 'min':
+      case 'max':
       case 'sum': {
-        const vars = node.childNodes
-          .map(n => n.nodeName)
-          .filter(n => n !== '#text');
-
-        const total = vars.reduce(
-          (total, varName) => parseInt(varMap.get(varName), 10) + total,
-          0
-        );
+        const total = tagToValue(node);
 
         node.nodeName = 'div';
         node.tagName = 'div';
@@ -53,6 +102,10 @@ export default function convertHTML(html: string) {
       }
     }
   });
-
-  return parse5.serialize(ast);
+  console.log(varMap);
+  return parse5
+    .serialize(ast)
+    .split('\n')
+    .filter(x => x.trim())
+    .join('\n');
 }

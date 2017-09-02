@@ -31,17 +31,28 @@ const TextAreas = styled.div`
 `;
 
 const DEFAULT_CODE = `<html>
-  <head>
-  </head>
-  <body>
-    <var name="a">20</var>
-    <var name="b">20</var>
+<head>
+</head>
+<body>
+  <var name="a">20</var>
+  <var name="b">20</var>
 
+  <var name="c">
     <sum>
-      <a></a>
-      <b></b>
+      <var name="a"></var>
+      <var name="b"></var>
+      30
     </sum>
-  </body>
+  </var>
+
+  <max>
+    30
+    <sum>
+      20
+      <var name="c"></var>
+    </sum>
+  </max>
+</body>
 
 </html>`;
 
@@ -67,7 +78,7 @@ export default class Index extends React.PureComponent {
 
         <TextAreas>
           <textarea value={this.state.code} onChange={this.onChange} />
-          <textarea value={this.state.compiledCode} />
+          <textarea value={this.state.compiledCode} readOnly />
         </TextAreas>
       </Container>
     );
