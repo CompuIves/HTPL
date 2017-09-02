@@ -55,7 +55,7 @@ function tagToValue(node) {
       return node.value ? node.value.replace('\n', '').trim() : null;
     }
     default: {
-      return null;
+      return node.childNodes.map(n => tagToValue(n)).filter(x => x)[0];
     }
   }
 }
