@@ -24,20 +24,14 @@ function tagToValue(node) {
     case 'min': {
       const vars = node.childNodes.map(n => tagToValue(n)).filter(x => x);
 
-      const min = vars.reduce(
-        (lowest, varVal) => (varVal < lowest ? varVal : lowest),
-        Infinity
-      );
+      const min = Math.min(...vars);
 
       return min;
     }
     case 'max': {
       const vars = node.childNodes.map(n => tagToValue(n)).filter(x => x);
 
-      const max = vars.reduce(
-        (highest, varVal) => (varVal > highest ? varVal : highest),
-        0
-      );
+      const max = Math.max(...vars);
 
       return max;
     }
