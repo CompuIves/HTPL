@@ -35,6 +35,16 @@ function tagToValue(node) {
 
       return max;
     }
+    case 'product': {
+      const vars = node.childNodes.map(n => tagToValue(n)).filter(x => );
+
+      const product = vars.reduce(
+        (product, value) => parseInt(value, 10) * product,
+        0
+      );
+
+      return product;
+    }
     case 'var': {
       const attr = node.attrs.find(s => s.name === 'name');
       if (!attr) {
